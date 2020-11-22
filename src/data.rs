@@ -41,7 +41,7 @@ impl Data {
     pub fn read_from(path: &Path) -> AppResult<Self> {
         if !path.exists() {
             let new_file = File::create(path)?;
-            serde_json::to_writer(new_file.try_clone()?, &Data::default())?;
+            serde_json::to_writer(new_file, &Data::default())?;
         }
         let file = File::open(path)?;
         serde_json::from_reader(file).map_err(|error| error.into())
@@ -67,7 +67,9 @@ mod tests {
     #[test]
     fn it_worked() {
         let test_file = Path::new("test.json");
-        remove_file(test_file).unwrap_or_else(|_| ());
+        if test_file.exists() {
+            remove_file(test_file).unwrap();
+        }
         let data = Data::read_from(test_file).unwrap();
         assert_eq!(data, Data::default());
         remove_file(test_file).unwrap();
